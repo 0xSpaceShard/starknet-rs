@@ -8,11 +8,12 @@ use starknet_core::types::{
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
     ConfirmedBlockId, ContractClass, ContractStorageKeys, DeclareTransactionResult,
     DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, Felt, FunctionCall,
-    Hash256, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxHashes,
-    MaybePendingBlockWithTxs, MaybePendingStateUpdate, MessageWithStatus, MsgFromL1,
-    SimulatedTransaction, SimulationFlag, SimulationFlagForEstimateFee, StarknetError,
-    StorageProof, SyncStatusType, Transaction, TransactionReceiptWithBlockInfo, TransactionStatus,
-    TransactionTrace, TransactionTraceWithHash,
+    Hash256, InvokeTransactionResult, MaybePreConfirmedBlockWithReceipts,
+    MaybePreConfirmedBlockWithTxHashes, MaybePreConfirmedBlockWithTxs,
+    MaybePreConfirmedStateUpdate, MessageWithStatus, MsgFromL1, SimulatedTransaction,
+    SimulationFlag, SimulationFlagForEstimateFee, StarknetError, StorageProof, SyncStatusType,
+    Transaction, TransactionReceiptWithBlockInfo, TransactionStatus, TransactionTrace,
+    TransactionTraceWithHash,
 };
 
 use crate::{
@@ -34,7 +35,7 @@ impl Provider for SequencerGatewayProvider {
     async fn get_block_with_tx_hashes<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithTxHashes, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithTxHashes, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -47,7 +48,7 @@ impl Provider for SequencerGatewayProvider {
     async fn get_block_with_txs<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithTxs, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithTxs, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -60,7 +61,7 @@ impl Provider for SequencerGatewayProvider {
     async fn get_block_with_receipts<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithReceipts, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithReceipts, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -73,7 +74,7 @@ impl Provider for SequencerGatewayProvider {
     async fn get_state_update<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingStateUpdate, ProviderError>
+    ) -> Result<MaybePreConfirmedStateUpdate, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -281,14 +282,14 @@ impl Provider for SequencerGatewayProvider {
 
     async fn block_number(&self) -> Result<u64, ProviderError> {
         let block = self.get_block(super::models::BlockId::Latest).await?;
-        Ok(block.block_number.ok_or(ConversionError)?)
+        Ok(block.block_number)
     }
 
     async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, ProviderError> {
         let block = self.get_block(super::models::BlockId::Latest).await?;
         Ok(BlockHashAndNumber {
             block_hash: block.block_hash.ok_or(ConversionError)?,
-            block_number: block.block_number.ok_or(ConversionError)?,
+            block_number: block.block_number,
         })
     }
 

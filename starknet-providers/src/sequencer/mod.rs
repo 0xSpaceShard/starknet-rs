@@ -536,7 +536,7 @@ fn append_block_id(url: &mut Url, block_identifier: BlockId) {
             url.query_pairs_mut()
                 .append_pair("blockNumber", &block_number.to_string());
         }
-        BlockId::Pending => {
+        BlockId::PreConfirmed => {
             url.query_pairs_mut().append_pair("blockNumber", "pending");
         }
         BlockId::Latest => (), // latest block is implicit

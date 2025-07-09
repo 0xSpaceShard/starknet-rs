@@ -11,12 +11,13 @@ use starknet_core::{
         ConfirmedBlockId, ContractClass, ContractErrorData, ContractStorageKeys,
         DeclareTransactionResult, DeployAccountTransactionResult, EventFilter, EventFilterWithPage,
         EventsPage, FeeEstimate, Felt as FeltPrimitive, FunctionCall, Hash256,
-        InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingStateUpdate, MessageWithStatus, MsgFromL1,
-        NoTraceAvailableErrorData, ResultPageRequest, SimulatedTransaction, SimulationFlag,
-        SimulationFlagForEstimateFee, StarknetError, StorageProof, SubscriptionId, SyncStatusType,
-        Transaction, TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
-        TransactionStatus, TransactionTrace, TransactionTraceWithHash,
+        InvokeTransactionResult, MaybePreConfirmedBlockWithReceipts,
+        MaybePreConfirmedBlockWithTxHashes, MaybePreConfirmedBlockWithTxs,
+        MaybePreConfirmedStateUpdate, MessageWithStatus, MsgFromL1, NoTraceAvailableErrorData,
+        ResultPageRequest, SimulatedTransaction, SimulationFlag, SimulationFlagForEstimateFee,
+        StarknetError, StorageProof, SubscriptionId, SyncStatusType, Transaction,
+        TransactionExecutionErrorData, TransactionReceiptWithBlockInfo, TransactionStatus,
+        TransactionTrace, TransactionTraceWithHash,
     },
 };
 
@@ -315,25 +316,25 @@ where
                         ),
                         ProviderRequestData::GetBlockWithTxHashes(_) => {
                             ProviderResponseData::GetBlockWithTxHashes(
-                                MaybePendingBlockWithTxHashes::deserialize(result)
+                                MaybePreConfirmedBlockWithTxHashes::deserialize(result)
                                     .map_err(JsonRpcClientError::<T::Error>::JsonError)?,
                             )
                         }
                         ProviderRequestData::GetBlockWithTxs(_) => {
                             ProviderResponseData::GetBlockWithTxs(
-                                MaybePendingBlockWithTxs::deserialize(result)
+                                MaybePreConfirmedBlockWithTxs::deserialize(result)
                                     .map_err(JsonRpcClientError::<T::Error>::JsonError)?,
                             )
                         }
                         ProviderRequestData::GetBlockWithReceipts(_) => {
                             ProviderResponseData::GetBlockWithReceipts(
-                                MaybePendingBlockWithReceipts::deserialize(result)
+                                MaybePreConfirmedBlockWithReceipts::deserialize(result)
                                     .map_err(JsonRpcClientError::<T::Error>::JsonError)?,
                             )
                         }
                         ProviderRequestData::GetStateUpdate(_) => {
                             ProviderResponseData::GetStateUpdate(
-                                MaybePendingStateUpdate::deserialize(result)
+                                MaybePreConfirmedStateUpdate::deserialize(result)
                                     .map_err(JsonRpcClientError::<T::Error>::JsonError)?,
                             )
                         }
@@ -540,7 +541,7 @@ where
     async fn get_block_with_tx_hashes<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithTxHashes, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithTxHashes, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -557,7 +558,7 @@ where
     async fn get_block_with_txs<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithTxs, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithTxs, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -574,7 +575,7 @@ where
     async fn get_block_with_receipts<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithReceipts, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithReceipts, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -591,7 +592,7 @@ where
     async fn get_state_update<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingStateUpdate, ProviderError>
+    ) -> Result<MaybePreConfirmedStateUpdate, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {

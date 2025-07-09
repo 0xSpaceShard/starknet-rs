@@ -24,89 +24,87 @@ impl From<core::BlockId> for BlockId {
             core::BlockId::Hash(hash) => Self::Hash(hash),
             core::BlockId::Number(num) => Self::Number(num),
             core::BlockId::Tag(core::BlockTag::Latest) => Self::Latest,
-            core::BlockId::Tag(core::BlockTag::Pending) => Self::Pending,
+            core::BlockId::Tag(core::BlockTag::PreConfirmed) => Self::PreConfirmed,
         }
     }
 }
 
-impl TryFrom<Block> for core::MaybePendingBlockWithTxHashes {
+impl TryFrom<Block> for core::MaybePreConfirmedBlockWithTxHashes {
     type Error = ConversionError;
 
     fn try_from(value: Block) -> Result<Self, Self::Error> {
-        match (value.block_hash, value.block_number, value.state_root) {
+        match (value.block_hash, value.state_root) {
             // Confirmed block
-            (Some(block_hash), Some(block_number), Some(state_root)) => {
-                Ok(Self::Block(core::BlockWithTxHashes {
-                    status: value.status.try_into()?,
-                    block_hash,
-                    parent_hash: value.parent_block_hash,
-                    block_number,
-                    new_root: state_root,
-                    timestamp: value.timestamp,
-                    sequencer_address: value.sequencer_address.unwrap_or_default(),
-                    l1_gas_price: value.l1_gas_price,
-                    l2_gas_price: value.l2_gas_price,
-                    l1_data_gas_price: value.l1_data_gas_price,
-                    l1_da_mode: value.l1_da_mode,
-                    starknet_version: value.starknet_version.ok_or(ConversionError)?,
-                    transactions: value
-                        .transactions
-                        .iter()
-                        .map(|tx| tx.transaction_hash())
-                        .collect(),
-                }))
-            }
-            // Pending block
-            (None, None, None) => Ok(Self::PendingBlock(core::PendingBlockWithTxHashes {
-                transactions: value
-                    .transactions
-                    .iter()
-                    .map(|tx| tx.transaction_hash())
-                    .collect(),
+            (Some(block_hash), Some(state_root)) => Ok(Self::Block(core::BlockWithTxHashes {
+                status: value.status.try_into()?,
+                block_hash,
+                parent_hash: value.parent_block_hash,
+                block_number: value.block_number,
+                new_root: state_root,
                 timestamp: value.timestamp,
                 sequencer_address: value.sequencer_address.unwrap_or_default(),
-                parent_hash: value.parent_block_hash,
                 l1_gas_price: value.l1_gas_price,
                 l2_gas_price: value.l2_gas_price,
                 l1_data_gas_price: value.l1_data_gas_price,
                 l1_da_mode: value.l1_da_mode,
                 starknet_version: value.starknet_version.ok_or(ConversionError)?,
+                transactions: value
+                    .transactions
+                    .iter()
+                    .map(|tx| tx.transaction_hash())
+                    .collect(),
             })),
+            // Pre-confirmed block
+            (None, None) => Ok(Self::PreConfirmedBlock(
+                core::PreConfirmedBlockWithTxHashes {
+                    transactions: value
+                        .transactions
+                        .iter()
+                        .map(|tx| tx.transaction_hash())
+                        .collect(),
+                    timestamp: value.timestamp,
+                    sequencer_address: value.sequencer_address.unwrap_or_default(),
+                    block_number: value.block_number,
+                    l1_gas_price: value.l1_gas_price,
+                    l2_gas_price: value.l2_gas_price,
+                    l1_data_gas_price: value.l1_data_gas_price,
+                    l1_da_mode: value.l1_da_mode,
+                    starknet_version: value.starknet_version.ok_or(ConversionError)?,
+                },
+            )),
             // Unknown combination
             _ => Err(ConversionError),
         }
     }
 }
 
-impl TryFrom<Block> for core::MaybePendingBlockWithTxs {
+impl TryFrom<Block> for core::MaybePreConfirmedBlockWithTxs {
     type Error = ConversionError;
 
     fn try_from(value: Block) -> Result<Self, Self::Error> {
-        match (value.block_hash, value.block_number, value.state_root) {
+        match (value.block_hash, value.state_root) {
             // Confirmed block
-            (Some(block_hash), Some(block_number), Some(state_root)) => {
-                Ok(Self::Block(core::BlockWithTxs {
-                    status: value.status.try_into()?,
-                    block_hash,
-                    parent_hash: value.parent_block_hash,
-                    block_number,
-                    new_root: state_root,
-                    timestamp: value.timestamp,
-                    sequencer_address: value.sequencer_address.unwrap_or_default(),
-                    l1_gas_price: value.l1_gas_price,
-                    l2_gas_price: value.l2_gas_price,
-                    l1_data_gas_price: value.l1_data_gas_price,
-                    l1_da_mode: value.l1_da_mode,
-                    starknet_version: value.starknet_version.ok_or(ConversionError)?,
-                    transactions: value
-                        .transactions
-                        .into_iter()
-                        .map(|tx| tx.try_into())
-                        .collect::<Result<_, _>>()?,
-                }))
-            }
-            // Pending block
-            (None, None, None) => Ok(Self::PendingBlock(core::PendingBlockWithTxs {
+            (Some(block_hash), Some(state_root)) => Ok(Self::Block(core::BlockWithTxs {
+                status: value.status.try_into()?,
+                block_hash,
+                parent_hash: value.parent_block_hash,
+                block_number: value.block_number,
+                new_root: state_root,
+                timestamp: value.timestamp,
+                sequencer_address: value.sequencer_address.unwrap_or_default(),
+                l1_gas_price: value.l1_gas_price,
+                l2_gas_price: value.l2_gas_price,
+                l1_data_gas_price: value.l1_data_gas_price,
+                l1_da_mode: value.l1_da_mode,
+                starknet_version: value.starknet_version.ok_or(ConversionError)?,
+                transactions: value
+                    .transactions
+                    .into_iter()
+                    .map(|tx| tx.try_into())
+                    .collect::<Result<_, _>>()?,
+            })),
+            // Pre-confirmed block
+            (None, None) => Ok(Self::PreConfirmedBlock(core::PreConfirmedBlockWithTxs {
                 transactions: value
                     .transactions
                     .into_iter()
@@ -114,7 +112,7 @@ impl TryFrom<Block> for core::MaybePendingBlockWithTxs {
                     .collect::<Result<_, _>>()?,
                 timestamp: value.timestamp,
                 sequencer_address: value.sequencer_address.unwrap_or_default(),
-                parent_hash: value.parent_block_hash,
+                block_number: value.block_number,
                 l1_gas_price: value.l1_gas_price,
                 l2_gas_price: value.l2_gas_price,
                 l1_data_gas_price: value.l1_data_gas_price,
@@ -127,7 +125,7 @@ impl TryFrom<Block> for core::MaybePendingBlockWithTxs {
     }
 }
 
-impl TryFrom<Block> for core::MaybePendingBlockWithReceipts {
+impl TryFrom<Block> for core::MaybePreConfirmedBlockWithReceipts {
     type Error = ConversionError;
 
     fn try_from(value: Block) -> Result<Self, Self::Error> {
@@ -156,37 +154,37 @@ impl TryFrom<Block> for core::MaybePendingBlockWithReceipts {
             });
         }
 
-        match (value.block_hash, value.block_number, value.state_root) {
+        match (value.block_hash, value.state_root) {
             // Confirmed block
-            (Some(block_hash), Some(block_number), Some(state_root)) => {
-                Ok(Self::Block(core::BlockWithReceipts {
-                    status: value.status.try_into()?,
-                    block_hash,
-                    parent_hash: value.parent_block_hash,
-                    block_number,
-                    new_root: state_root,
-                    timestamp: value.timestamp,
-                    sequencer_address: value.sequencer_address.unwrap_or_default(),
-                    l1_gas_price: value.l1_gas_price,
-                    l2_gas_price: value.l2_gas_price,
-                    l1_data_gas_price: value.l1_data_gas_price,
-                    l1_da_mode: value.l1_da_mode,
-                    starknet_version: value.starknet_version.ok_or(ConversionError)?,
-                    transactions,
-                }))
-            }
-            // Pending block
-            (None, None, None) => Ok(Self::PendingBlock(core::PendingBlockWithReceipts {
-                transactions,
+            (Some(block_hash), Some(state_root)) => Ok(Self::Block(core::BlockWithReceipts {
+                status: value.status.try_into()?,
+                block_hash,
+                parent_hash: value.parent_block_hash,
+                block_number: value.block_number,
+                new_root: state_root,
                 timestamp: value.timestamp,
                 sequencer_address: value.sequencer_address.unwrap_or_default(),
-                parent_hash: value.parent_block_hash,
                 l1_gas_price: value.l1_gas_price,
                 l2_gas_price: value.l2_gas_price,
                 l1_data_gas_price: value.l1_data_gas_price,
                 l1_da_mode: value.l1_da_mode,
                 starknet_version: value.starknet_version.ok_or(ConversionError)?,
+                transactions,
             })),
+            // Pre-confirmed block
+            (None, None) => Ok(Self::PreConfirmedBlock(
+                core::PreConfirmedBlockWithReceipts {
+                    transactions,
+                    timestamp: value.timestamp,
+                    sequencer_address: value.sequencer_address.unwrap_or_default(),
+                    block_number: value.block_number,
+                    l1_gas_price: value.l1_gas_price,
+                    l2_gas_price: value.l2_gas_price,
+                    l1_data_gas_price: value.l1_data_gas_price,
+                    l1_da_mode: value.l1_da_mode,
+                    starknet_version: value.starknet_version.ok_or(ConversionError)?,
+                },
+            )),
             // Unknown combination
             _ => Err(ConversionError),
         }
@@ -198,7 +196,7 @@ impl TryFrom<BlockStatus> for core::BlockStatus {
 
     fn try_from(value: BlockStatus) -> Result<Self, Self::Error> {
         match value {
-            BlockStatus::Pending => Ok(Self::Pending),
+            BlockStatus::PreConfirmed => Ok(Self::PreConfirmed),
             BlockStatus::Aborted => Err(ConversionError),
             BlockStatus::Reverted => Ok(Self::Rejected),
             BlockStatus::AcceptedOnL2 => Ok(Self::AcceptedOnL2),
@@ -468,7 +466,7 @@ impl From<core::DataAvailabilityMode> for DataAvailabilityMode {
     }
 }
 
-impl TryFrom<StateUpdate> for core::MaybePendingStateUpdate {
+impl TryFrom<StateUpdate> for core::MaybePreConfirmedStateUpdate {
     type Error = ConversionError;
 
     fn try_from(value: StateUpdate) -> Result<Self, Self::Error> {
@@ -479,7 +477,7 @@ impl TryFrom<StateUpdate> for core::MaybePendingStateUpdate {
                 old_root: value.old_root,
                 state_diff: value.state_diff.into(),
             })),
-            (None, None) => Ok(Self::PendingUpdate(core::PendingStateUpdate {
+            (None, None) => Ok(Self::PreConfirmedUpdate(core::PreConfirmedStateUpdate {
                 old_root: value.old_root,
                 state_diff: value.state_diff.into(),
             })),
@@ -1047,7 +1045,7 @@ impl TryFrom<BlockStatus> for core::TransactionFinalityStatus {
     fn try_from(value: BlockStatus) -> Result<Self, Self::Error> {
         match value {
             // Transactions in pending blocks are considered "accepted on L2" now
-            BlockStatus::Pending | BlockStatus::AcceptedOnL2 => Ok(Self::AcceptedOnL2),
+            BlockStatus::PreConfirmed | BlockStatus::AcceptedOnL2 => Ok(Self::AcceptedOnL2),
             BlockStatus::AcceptedOnL1 => Ok(Self::AcceptedOnL1),
             BlockStatus::Aborted | BlockStatus::Reverted => Err(ConversionError),
         }

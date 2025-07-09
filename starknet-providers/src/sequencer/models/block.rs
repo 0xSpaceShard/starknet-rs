@@ -11,7 +11,7 @@ use super::{ConfirmedTransactionReceipt, TransactionType};
 pub enum BlockId {
     Hash(Felt),
     Number(u64),
-    Pending,
+    PreConfirmed,
     Latest,
 }
 
@@ -20,12 +20,12 @@ pub enum BlockId {
 #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
 pub enum BlockStatus {
     /// Block that is yet to be closed
-    Pending,
+    PreConfirmed,
     /// Block failed in the L2 pipeline
     Aborted,
     /// A reverted block (rejected on L1)
     Reverted,
-    /// Block that was created on L2, in contrast to Pending, which is not yet closed
+    /// Block that was created on L2, in contrast to PreConfirmed, which is not yet closed
     AcceptedOnL2,
     /// Accepted on L1
     AcceptedOnL1,
@@ -38,7 +38,7 @@ pub struct Block {
     #[serde(default)]
     #[serde_as(as = "UfeHexOption")]
     pub block_hash: Option<Felt>,
-    pub block_number: Option<u64>,
+    pub block_number: u64,
     #[serde_as(as = "UfeHex")]
     pub parent_block_hash: Felt,
     pub timestamp: u64,
@@ -79,7 +79,7 @@ mod tests {
 
         let block: Block = serde_json::from_str(raw).unwrap();
 
-        assert_eq!(block.block_number.unwrap(), 100);
+        assert_eq!(block.block_number, 100);
         assert_eq!(block.status, BlockStatus::AcceptedOnL1);
         assert_eq!(
             block.state_root.unwrap(),
@@ -117,7 +117,7 @@ mod tests {
 
         let block: Block = serde_json::from_str(raw).unwrap();
 
-        assert_eq!(block.block_number.unwrap(), 25);
+        assert_eq!(block.block_number, 25);
         assert_eq!(block.transaction_receipts.len(), 11);
         let receipt = &block.transaction_receipts[10];
         assert_eq!(receipt.l2_to_l1_messages.len(), 1);
@@ -135,7 +135,7 @@ mod tests {
 
         let block: Block = serde_json::from_str(raw).unwrap();
 
-        assert_eq!(block.block_number.unwrap(), 1564);
+        assert_eq!(block.block_number, 1564);
         assert_eq!(block.transaction_receipts.len(), 4);
         let receipt = &block.transaction_receipts[1];
         assert_eq!(receipt.l2_to_l1_messages.len(), 1);
@@ -154,7 +154,7 @@ mod tests {
 
         let block: Block = serde_json::from_str(raw).unwrap();
 
-        assert_eq!(block.block_number.unwrap(), 4);
+        assert_eq!(block.block_number, 4);
         assert_eq!(block.transaction_receipts.len(), 4);
         let receipt = &block.transaction_receipts[3];
         assert_eq!(receipt.events.len(), 1);
@@ -171,9 +171,9 @@ mod tests {
         let block: Block = serde_json::from_str(raw).unwrap();
 
         assert!(block.block_hash.is_none());
-        assert!(block.block_number.is_none());
+        // assert!(block.block_number.is_none()); TODO
         assert!(block.state_root.is_none());
-        assert_eq!(block.status, BlockStatus::Pending);
+        assert_eq!(block.status, BlockStatus::PreConfirmed);
     }
 
     #[test]

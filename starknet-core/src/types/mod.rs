@@ -41,12 +41,13 @@ pub use codegen::{
     LegacyContractEntryPoint, LegacyEntryPointsByType, LegacyEventAbiEntry, LegacyEventAbiType,
     LegacyFunctionAbiEntry, LegacyFunctionAbiType, LegacyStructAbiEntry, LegacyStructAbiType,
     LegacyStructMember, LegacyTypedParameter, MsgFromL1, MsgToL1, NewTransactionStatus,
-    NoTraceAvailableErrorData, NonceUpdate, OrderedEvent, OrderedMessage, PendingBlockWithReceipts,
-    PendingBlockWithTxHashes, PendingBlockWithTxs, PendingStateUpdate, PriceUnit, ReorgData,
-    ReplacedClassItem, ResourceBounds, ResourceBoundsMapping, ResourcePrice, ResultPageRequest,
-    RevertedInvocation, SequencerTransactionStatus, SierraEntryPoint, SimulatedTransaction,
-    SimulationFlag, SimulationFlagForEstimateFee, StarknetError, StateDiff, StateUpdate,
-    StorageEntry, StorageProof, SubscriptionId, SyncStatus, TransactionExecutionErrorData,
+    NoTraceAvailableErrorData, NonceUpdate, OrderedEvent, OrderedMessage,
+    PreConfirmedBlockWithReceipts, PreConfirmedBlockWithTxHashes, PreConfirmedBlockWithTxs,
+    PreConfirmedStateUpdate, PriceUnit, ReorgData, ReplacedClassItem, ResourceBounds,
+    ResourceBoundsMapping, ResourcePrice, ResultPageRequest, RevertedInvocation,
+    SequencerTransactionStatus, SierraEntryPoint, SimulatedTransaction, SimulationFlag,
+    SimulationFlagForEstimateFee, StarknetError, StateDiff, StateUpdate, StorageEntry,
+    StorageProof, SubscriptionId, SyncStatus, TransactionExecutionErrorData,
     TransactionExecutionStatus, TransactionFinalityStatus, TransactionReceiptWithBlockInfo,
     TransactionTraceWithHash, TransactionWithReceipt,
 };
@@ -94,11 +95,11 @@ pub use contract::ContractArtifact;
 /// A pending block lacks certain information on the block header compared to a non-pending block.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum MaybePendingBlockWithTxHashes {
+pub enum MaybePreConfirmedBlockWithTxHashes {
     /// A confirmed, non-pending block.
     Block(BlockWithTxHashes),
-    /// A pending block.
-    PendingBlock(PendingBlockWithTxHashes),
+    /// A pre-confirmed block.
+    PreConfirmedBlock(PreConfirmedBlockWithTxHashes),
 }
 
 /// A block with full transactions that may or may not be pending.
@@ -106,36 +107,36 @@ pub enum MaybePendingBlockWithTxHashes {
 /// A pending block lacks certain information on the block header compared to a non-pending block.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum MaybePendingBlockWithTxs {
+pub enum MaybePreConfirmedBlockWithTxs {
     /// A confirmed, non-pending block.
     Block(BlockWithTxs),
-    /// A pending block.
-    PendingBlock(PendingBlockWithTxs),
+    /// A pre-confirmed block.
+    PreConfirmedBlock(PreConfirmedBlockWithTxs),
 }
 
 /// A block with full transactions and receipts that may or may not be pending.
 ///
-/// A pending block lacks certain information on the block header compared to a non-pending block.
+/// A pre-confirmed block lacks certain information on the block header compared to a non-pending block.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum MaybePendingBlockWithReceipts {
+pub enum MaybePreConfirmedBlockWithReceipts {
     /// A confirmed, non-pending block.
     Block(BlockWithReceipts),
-    /// A pending block.
-    PendingBlock(PendingBlockWithReceipts),
+    /// A pre-confirmed block.
+    PreConfirmedBlock(PreConfirmedBlockWithReceipts),
 }
 
 /// State update of a block that may or may not be pending.
 ///
-/// State update for a pending block lacks certain information compared to that of a non-pending
+/// State update for a pre-confirmed block lacks certain information compared to that of a non-pre-confirmed
 /// block.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum MaybePendingStateUpdate {
+pub enum MaybePreConfirmedStateUpdate {
     /// The state update is for a confirmed, non-pending block.
     Update(StateUpdate),
     /// The state update is for a pending block.
-    PendingUpdate(PendingStateUpdate),
+    PreConfirmedUpdate(PreConfirmedStateUpdate),
 }
 
 /// The hash and number (height) for a block.
@@ -564,12 +565,12 @@ mod errors {
 }
 pub use errors::ParseMsgToL2Error;
 
-impl MaybePendingBlockWithTxHashes {
+impl MaybePreConfirmedBlockWithTxHashes {
     /// Gets a reference to the list of transaction hashes.
     pub fn transactions(&self) -> &[Felt] {
         match self {
             Self::Block(block) => &block.transactions,
-            Self::PendingBlock(block) => &block.transactions,
+            Self::PreConfirmedBlock(block) => &block.transactions,
         }
     }
 
@@ -577,7 +578,7 @@ impl MaybePendingBlockWithTxHashes {
     pub const fn l1_gas_price(&self) -> &ResourcePrice {
         match self {
             Self::Block(block) => &block.l1_gas_price,
-            Self::PendingBlock(block) => &block.l1_gas_price,
+            Self::PreConfirmedBlock(block) => &block.l1_gas_price,
         }
     }
 
@@ -585,7 +586,7 @@ impl MaybePendingBlockWithTxHashes {
     pub const fn l2_gas_price(&self) -> &ResourcePrice {
         match self {
             Self::Block(block) => &block.l2_gas_price,
-            Self::PendingBlock(block) => &block.l2_gas_price,
+            Self::PreConfirmedBlock(block) => &block.l2_gas_price,
         }
     }
 
@@ -593,17 +594,17 @@ impl MaybePendingBlockWithTxHashes {
     pub const fn l1_data_gas_price(&self) -> &ResourcePrice {
         match self {
             Self::Block(block) => &block.l1_data_gas_price,
-            Self::PendingBlock(block) => &block.l1_data_gas_price,
+            Self::PreConfirmedBlock(block) => &block.l1_data_gas_price,
         }
     }
 }
 
-impl MaybePendingBlockWithTxs {
+impl MaybePreConfirmedBlockWithTxs {
     /// Gets a reference to the list of transactions.
     pub fn transactions(&self) -> &[Transaction] {
         match self {
             Self::Block(block) => &block.transactions,
-            Self::PendingBlock(block) => &block.transactions,
+            Self::PreConfirmedBlock(block) => &block.transactions,
         }
     }
 
@@ -611,17 +612,17 @@ impl MaybePendingBlockWithTxs {
     pub const fn l1_gas_price(&self) -> &ResourcePrice {
         match self {
             Self::Block(block) => &block.l1_gas_price,
-            Self::PendingBlock(block) => &block.l1_gas_price,
+            Self::PreConfirmedBlock(block) => &block.l1_gas_price,
         }
     }
 }
 
-impl MaybePendingBlockWithReceipts {
+impl MaybePreConfirmedBlockWithReceipts {
     /// Gets a reference to the list of transactions with receipts.
     pub fn transactions(&self) -> &[TransactionWithReceipt] {
         match self {
             Self::Block(block) => &block.transactions,
-            Self::PendingBlock(block) => &block.transactions,
+            Self::PreConfirmedBlock(block) => &block.transactions,
         }
     }
 
@@ -629,7 +630,7 @@ impl MaybePendingBlockWithReceipts {
     pub const fn l1_gas_price(&self) -> &ResourcePrice {
         match self {
             Self::Block(block) => &block.l1_gas_price,
-            Self::PendingBlock(block) => &block.l1_gas_price,
+            Self::PreConfirmedBlock(block) => &block.l1_gas_price,
         }
     }
 }

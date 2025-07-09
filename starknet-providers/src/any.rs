@@ -4,11 +4,11 @@ use starknet_core::types::{
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
     ConfirmedBlockId, ContractClass, ContractStorageKeys, DeclareTransactionResult,
     DeployAccountTransactionResult, EventFilter, EventsPage, FeeEstimate, Felt, FunctionCall,
-    Hash256, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxHashes,
-    MaybePendingBlockWithTxs, MaybePendingStateUpdate, MessageWithStatus, MsgFromL1,
-    SimulatedTransaction, SimulationFlag, SimulationFlagForEstimateFee, StorageProof,
-    SyncStatusType, Transaction, TransactionReceiptWithBlockInfo, TransactionStatus,
-    TransactionTrace, TransactionTraceWithHash,
+    Hash256, InvokeTransactionResult, MaybePreConfirmedBlockWithReceipts,
+    MaybePreConfirmedBlockWithTxHashes, MaybePreConfirmedBlockWithTxs,
+    MaybePreConfirmedStateUpdate, MessageWithStatus, MsgFromL1, SimulatedTransaction,
+    SimulationFlag, SimulationFlagForEstimateFee, StorageProof, SyncStatusType, Transaction,
+    TransactionReceiptWithBlockInfo, TransactionStatus, TransactionTrace, TransactionTraceWithHash,
 };
 
 use crate::{
@@ -50,7 +50,7 @@ impl Provider for AnyProvider {
     async fn get_block_with_tx_hashes<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithTxHashes, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithTxHashes, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -71,7 +71,7 @@ impl Provider for AnyProvider {
     async fn get_block_with_txs<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithTxs, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithTxs, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -89,7 +89,7 @@ impl Provider for AnyProvider {
     async fn get_block_with_receipts<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingBlockWithReceipts, ProviderError>
+    ) -> Result<MaybePreConfirmedBlockWithReceipts, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {
@@ -108,7 +108,7 @@ impl Provider for AnyProvider {
     async fn get_state_update<B>(
         &self,
         block_id: B,
-    ) -> Result<MaybePendingStateUpdate, ProviderError>
+    ) -> Result<MaybePreConfirmedStateUpdate, ProviderError>
     where
         B: AsRef<BlockId> + Send + Sync,
     {

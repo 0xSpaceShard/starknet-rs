@@ -120,8 +120,8 @@ pub struct BlockHeader {
 /// The status of the block.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BlockStatus {
-    #[serde(rename = "PENDING")]
-    Pending,
+    #[serde(rename = "PRE_CONFIRMED")]
+    PreConfirmed,
     #[serde(rename = "ACCEPTED_ON_L2")]
     AcceptedOnL2,
     #[serde(rename = "ACCEPTED_ON_L1")]
@@ -137,8 +137,8 @@ pub enum BlockStatus {
 pub enum BlockTag {
     #[serde(rename = "latest")]
     Latest,
-    #[serde(rename = "pending")]
-    Pending,
+    #[serde(rename = "pre_confirmed")]
+    PreConfirmed,
 }
 
 /// Block with transactions and receipts.
@@ -1619,19 +1619,18 @@ pub struct OrderedMessage {
     pub payload: Vec<Felt>,
 }
 
-/// Pending block with transactions and receipts.
+/// Pre-confirmed block with transactions and receipts.
 ///
 /// The dynamic block being constructed by the sequencer. Note that this object will be deprecated
 /// upon decentralization.
 #[serde_as]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
-pub struct PendingBlockWithReceipts {
+pub struct PreConfirmedBlockWithReceipts {
     /// The transactions in this block
     pub transactions: Vec<TransactionWithReceipt>,
-    /// The hash of this block's parent
-    #[serde_as(as = "UfeHex")]
-    pub parent_hash: Felt,
+    /// The block number (its height)
+    pub block_number: u64,
     /// The time in which the block was created, encoded in Unix time
     pub timestamp: u64,
     /// The Starknet identity of the sequencer submitting this block
@@ -1649,20 +1648,19 @@ pub struct PendingBlockWithReceipts {
     pub starknet_version: String,
 }
 
-/// Pending block with transaction hashes.
+/// Pre-confirmed block with transaction hashes.
 ///
 /// The dynamic block being constructed by the sequencer. Note that this object will be deprecated
 /// upon decentralization.
 #[serde_as]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
-pub struct PendingBlockWithTxHashes {
+pub struct PreConfirmedBlockWithTxHashes {
     /// The hashes of the transactions included in this block
     #[serde_as(as = "Vec<UfeHex>")]
     pub transactions: Vec<Felt>,
-    /// The hash of this block's parent
-    #[serde_as(as = "UfeHex")]
-    pub parent_hash: Felt,
+    /// The block number (its height)
+    pub block_number: u64,
     /// The time in which the block was created, encoded in Unix time
     pub timestamp: u64,
     /// The Starknet identity of the sequencer submitting this block
@@ -1680,19 +1678,18 @@ pub struct PendingBlockWithTxHashes {
     pub starknet_version: String,
 }
 
-/// Pending block with transactions.
+/// Pre-confirmed block with transactions.
 ///
 /// The dynamic block being constructed by the sequencer. Note that this object will be deprecated
 /// upon decentralization.
 #[serde_as]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
-pub struct PendingBlockWithTxs {
+pub struct PreConfirmedBlockWithTxs {
     /// The transactions in this block
     pub transactions: Vec<Transaction>,
-    /// The hash of this block's parent
-    #[serde_as(as = "UfeHex")]
-    pub parent_hash: Felt,
+    /// The block number (its height)
+    pub block_number: u64,
     /// The time in which the block was created, encoded in Unix time
     pub timestamp: u64,
     /// The Starknet identity of the sequencer submitting this block
@@ -1710,13 +1707,13 @@ pub struct PendingBlockWithTxs {
     pub starknet_version: String,
 }
 
-/// Pending state update.
+/// Pre-confirmed state update.
 ///
-/// Pending state update.
+/// Pre-confirmed state update.
 #[serde_as]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
-pub struct PendingStateUpdate {
+pub struct PreConfirmedStateUpdate {
     /// The previous global state root
     #[serde_as(as = "UfeHex")]
     pub old_root: Felt,
@@ -2191,6 +2188,8 @@ pub enum TransactionExecutionStatus {
 /// The finality status of the transaction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TransactionFinalityStatus {
+    #[serde(rename = "PRE_CONFIRMED")]
+    PreConfirmed,
     #[serde(rename = "ACCEPTED_ON_L2")]
     AcceptedOnL2,
     #[serde(rename = "ACCEPTED_ON_L1")]

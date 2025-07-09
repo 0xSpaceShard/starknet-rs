@@ -38,8 +38,8 @@ pub enum TransactionStatus {
     NotReceived,
     /// Transaction was received by the sequenced
     Received,
-    /// Transaction passed teh validation and entered the pending block
-    Pending,
+    /// Transaction passed teh validation and entered the pre-confirmed block
+    PreConfirmed,
     /// The transaction failed validation and was skipped (applies both to a
     /// pending and actual created block)
     Rejected,
@@ -61,9 +61,9 @@ impl TransactionStatus {
         matches!(self, Self::Received)
     }
 
-    /// Returns `true` if the transaction status is `Pending`.
-    pub const fn is_pending(&self) -> bool {
-        matches!(self, Self::Pending)
+    /// Returns `true` if the transaction status is `PreConfirmed`.
+    pub const fn is_pre_confirmed(&self) -> bool {
+        matches!(self, Self::PreConfirmed)
     }
 
     /// Returns `true` if the transaction status is `Rejected`.
